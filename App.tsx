@@ -1,9 +1,9 @@
-import {StatusBar} from 'expo-status-bar'
-import {StyleSheet, Text, View} from 'react-native'
+import { StatusBar } from 'expo-status-bar'
+import { StyleSheet, Text, View } from 'react-native'
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="app">
       <Text>
         TODO: implement a welcome screen with 2 buttons – "Sign in with Google"
         and "Sign in with Github"; ios should have additional button "Sign in

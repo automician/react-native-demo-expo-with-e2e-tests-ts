@@ -1,9 +1,10 @@
 import { shared, $ } from './shared'
 import { beforeEach } from '@jest/globals'
-import config from '../app.config'
 import { be } from 'selenidejs'
 import { AppState } from './utils/appium'
 import { testPlatform } from './utils/platform'
+import { metro } from './utils/metro'
+import { config } from '../app.config'
 
 // TODO: can we reload app via Metro bundler remotely?
 // via adb: https://stackoverflow.com/a/55245508/1297371
@@ -13,9 +14,9 @@ import { testPlatform } from './utils/platform'
 beforeEach(async () => {
   const appId = testPlatform.isAndroid
     ? config.android.package
-    : config.ios.bundleIdentifier
+    : config.ios.bundleId
   const appState = await shared.wdioDriver.queryAppState(appId)
-  let wasActivated = false
+  let wasOpenedAfterNotRunning = false
 
   switch (appState) {
     case AppState.IsNotInstalled:
@@ -29,7 +30,7 @@ beforeEach(async () => {
        * hence, we can just use .activateApp(config.android.package) instead
        */
       await shared.wdioDriver.activateApp(appId)
-      wasActivated = true
+      wasOpenedAfterNotRunning = true
       ;(await $(drd && 'DevLauncherMainScreen')
         .with({ timeout: 1000 })
         .waitUntil(be.visible)) && (await $('text=http').tap())
@@ -38,7 +39,6 @@ beforeEach(async () => {
     case AppState.IsRunningInBackgroundOrSuspended:
     case AppState.IsRunningInBackground:
       await shared.wdioDriver.activateApp(appId)
-      wasActivated = true
     case AppState.IsRunningInForeground:
     default:
       // TODO: handle for ios too!
@@ -50,6 +50,9 @@ beforeEach(async () => {
     /**
        * TODO: consider the following shortcuts:
       await $('name=Done').with({ condition: be.visible }).tap();
+      // or
+      await $('name=Done').with({ performOn: be.visible }).tap();
+      // and wrappers over previous:
       await $('name=Done').on(be.visible).tap();
       // or
       await $('name=Done').if(be.visible).tap();
@@ -63,18 +66,13 @@ beforeEach(async () => {
     (await $('text=Runtime version:')) &&
     (await $('text=http').tap())
 
-  // TODO: will activate reset app to initial state? if no, then we have to reload it still
-  //       yet ensuring that 46 event will not press any button:)
-  //       maybe, then, reload it via shake + tap on Reload?
-  // force app reload
-  drd &&
-    !wasActivated &&
-    (await shared.sehqDriver.executeScript('mobile: shell', {
-      command: 'input',
-      args: ['keyevent', '46'],
-    }))
-  // TODO: implement triggering localhost:8081/reload endpoint
-  // ios...
-  // TODO: how can we reload app via Metro bundler remotely?
-  //       do we even need it? can we workaroud it somehow?
+  // TODO: consider waiting for "loading screen - white screen with logo"
+  //       instead of 'Loading from...' text
+  !wasOpenedAfterNotRunning &&
+    (await metro.reload()) &&
+    (await $('text=Loading from')
+      .with({ timeout: 1000 })
+      .waitUntil(be.visible)) &&
+    (await $('text=Loading from').waitUntil(be.not.visible))
+  $('app').should(be.visible)
 })

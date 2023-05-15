@@ -13,4 +13,6 @@ declare global {
   }
   var ios: boolean
   var drd: boolean
+  var wdioDriver: import('webdriverio').Browser
+  var sehqDriver: import('selenium-webdriver').WebDriver
 }

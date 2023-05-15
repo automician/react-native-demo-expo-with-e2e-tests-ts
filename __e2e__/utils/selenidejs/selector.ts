@@ -1,66 +1,80 @@
-import { By } from 'selenium-webdriver';
-import config from '../../../app.config';
-import { testPlatform } from '../platform';
+import { By } from 'selenium-webdriver'
+import { testPlatform } from '../platform'
+// import { config } from '../../../app.config';
 
 export const selector = {
   toMobileBy(value: string): By {
     // BY XPATH
-    if (['/', '(', '..', './', '*/'].some((it) => value.startsWith(it))) {
-      return new By('xpath', value);
+    if (['/', '(', '..', './', '*/'].some(it => value.startsWith(it))) {
+      return new By('xpath', value)
     }
 
     // BY EXACT TEXT
-    const matchedByExactText = value.match(/(?:^"(.*?)"$)|(?:^text='(.*?)')|(?:^text="(.*?)")/s);
+    const matchedByExactText = value.match(
+      /(?:^"(.*?)"$)|(?:^text='(.*?)')|(?:^text="(.*?)")/s,
+    )
     if (matchedByExactText) {
-      const text = matchedByExactText[1] || matchedByExactText[2] || matchedByExactText[3];
+      const text =
+        matchedByExactText[1] || matchedByExactText[2] || matchedByExactText[3]
       if (testPlatform.isAndroid) {
-        return new By('-android uiautomator', `new UiSelector().text("${text}")`);
+        return new By(
+          '-android uiautomator',
+          `new UiSelector().text("${text}")`,
+        )
       } else {
         // ios...
-        return new By('-ios predicate string', `label == "${text}"`);
+        return new By('-ios predicate string', `label == "${text}"`)
       }
     }
 
     // BY CONTAINED TEXT
-    const matchedByTextContains = value.match(/^text=(.*?)$/s);
+    const matchedByTextContains = value.match(/^text=(.*?)$/s)
     if (matchedByTextContains) {
-      const text = matchedByTextContains[1];
+      const text = matchedByTextContains[1]
       if (testPlatform.isAndroid) {
-        return new By('-android uiautomator', `new UiSelector().textContains("${text}")`);
+        return new By(
+          '-android uiautomator',
+          `new UiSelector().textContains("${text}")`,
+        )
       } else {
         // ios...
         // in ios we have to additionally select last ([-1]) element,
         // because it considers all parent elements as well the ones with same label attribute
-        return new By('-ios class chain', '**/*[`label CONTAINS "' + text + '"`][-1]');
+        return new By(
+          '-ios class chain',
+          '**/*[`label CONTAINS "' + text + '"`][-1]',
+        )
       }
     }
 
     // BY name
-    const matchedByExactName = value.match(/^name=(.*?)$/s);
+    const matchedByExactName = value.match(/^name=(.*?)$/s)
     if (matchedByExactName) {
-      const name = matchedByExactName[1];
-      return new By('name', name);
+      const name = matchedByExactName[1]
+      return new By('name', name)
     }
 
     // BY CLASS NAME
     if (
-      ['uia', 'xcuielementtype', 'cyi', 'android.widget', 'android.view'].some((it) =>
-        value.toLowerCase().startsWith(it),
+      ['uia', 'xcuielementtype', 'cyi', 'android.widget', 'android.view'].some(
+        it => value.toLowerCase().startsWith(it),
       )
     ) {
-      return new By('class name', value);
+      return new By('class name', value)
     }
 
-    // const byNamespaceId = (value: string) => new By('id', `${config.android.package}:id/${value}`);
+    // const byNamespaceId = (value: string) =>
+    //   new By('id', `${config.android.package}:id/${value}`)
 
     // BY explicit ID
-    const matchedCssLikeID = value.match(/^#([a-zA-Z0-9-_]+)$/);
+    const matchedCssLikeID = value.match(/^#([a-zA-Z0-9-_]+)$/)
     if (matchedCssLikeID) {
-      return new By('id', matchedCssLikeID[1]);
+      return new By('id', matchedCssLikeID[1])
     }
 
     // BY react native testID
-    const matchedWordWithDashesUnderscoresOrNumbers = value.match(/^[a-zA-Z_\d-]+$/);
+    const matchedWordWithDashesUnderscoresOrNumbers =
+      value.match(/^[a-zA-Z_\d-]+$/)
     if (matchedWordWithDashesUnderscoresOrNumbers) {
       if (testPlatform.isAndroid) {
         /**
@@ -74,18 +88,20 @@ export const selector = {
          * - disableIdLocatorAutocompletion: true
          * then you can use:
          */
-        return new By('id', value);
+        return new By('id', value)
       } else {
         // ios...
-        return new By('accessibility id', value);
+        return new By('accessibility id', value)
       }
     }
 
-    const matchedAndroidID = value.match(/^[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)+:id\/[a-zA-Z0-9-_]+$/);
+    const matchedAndroidID = value.match(
+      /^[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)+:id\/[a-zA-Z0-9-_]+$/,
+    )
     if (matchedAndroidID) {
-      return new By('id', value);
+      return new By('id', value)
     }
 
-    throw new Error(`invalid selector: ${value}`);
+    throw new Error(`invalid selector: ${value}`)
   },
-};
+}
