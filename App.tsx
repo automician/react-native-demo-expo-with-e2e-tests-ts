@@ -1,14 +1,15 @@
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, Platform } from 'react-native'
+import Button from './src/Button'
+
+const isIos = Platform.OS === 'ios'
 
 export default function App() {
   return (
     <View style={styles.container} testID="app">
-      <Text>
-        TODO: implement a welcome screen with 2 buttons – "Sign in with Google"
-        and "Sign in with Github"; ios should have additional button "Sign in
-        with Apple"
-      </Text>
+      <Button text='Sign in with Google' />
+      <Button text='Sign in with Github' />
+      {isIos && <Button text='Sign in with Apple' />}
       <StatusBar style="auto" />
     </View>
   )
